@@ -163,7 +163,7 @@ function buildNode(tabId, childMap) {
   title.textContent = displayTitle(tabId);
   title.title = tab?.url || "";
   title.addEventListener("dblclick", (e) => {
-    e.stopPropagation();
+    cancelPendingActivation(tabId);
     startRename(title, tabId);
   });
 
@@ -206,7 +206,7 @@ function buildNode(tabId, childMap) {
   actions.append(colorBtn, unloadBtn, closeBtn);
   node.append(toggle, favicon, title, actions);
 
-  node.addEventListener("click", () => activateTab(tabId));
+  node.addEventListener("click", () => scheduleActivation(tabId));
   node.addEventListener("contextmenu", (e) => {
     e.preventDefault();
     openColorPopover(tabId, node);
@@ -225,6 +225,29 @@ function buildNode(tabId, childMap) {
   }
 
   return wrapper;
+}
+
+// A double-click on the title is preceded by two ordinary "click" events, so
+// a naive click handler would activate (and close) the popup before the
+// dblclick ever fires. Delay activation briefly so a following dblclick can
+// cancel it in favor of renaming instead.
+const pendingActivations = new Map();
+
+function scheduleActivation(tabId) {
+  cancelPendingActivation(tabId);
+  const timer = setTimeout(() => {
+    pendingActivations.delete(tabId);
+    activateTab(tabId);
+  }, 220);
+  pendingActivations.set(tabId, timer);
+}
+
+function cancelPendingActivation(tabId) {
+  const timer = pendingActivations.get(tabId);
+  if (timer) {
+    clearTimeout(timer);
+    pendingActivations.delete(tabId);
+  }
 }
 
 async function activateTab(tabId) {
