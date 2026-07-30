@@ -1,7 +1,7 @@
 // Leaf Tabs - background service worker (MV3, event-driven, no persistent global state)
 //
 // All tree state lives in chrome.storage.local under the "leafTree" key:
-//   { [tabId]: { parentId: number|null, color: string|null, customName: string|null, collapsed: boolean } }
+//   { [tabId]: { parentId: number|null, color: string|null, customName: string|null, collapsed: boolean, locked: boolean } }
 // The service worker never assumes in-memory state survives between events -
 // every handler reads what it needs from storage, mutates, and writes back.
 
@@ -31,6 +31,7 @@ async function reconcileWithOpenTabs() {
         color: null,
         customName: null,
         collapsed: false,
+        locked: false,
       };
     }
   }
@@ -60,6 +61,7 @@ chrome.tabs.onCreated.addListener(async (tab) => {
     color: null,
     customName: null,
     collapsed: false,
+    locked: false,
   };
   await setTree(tree);
 });
@@ -89,7 +91,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo) => {
   if (!("openerTabId" in changeInfo)) return;
   const tree = await getTree();
   if (!tree[tabId]) {
-    tree[tabId] = { parentId: null, color: null, customName: null, collapsed: false };
+    tree[tabId] = { parentId: null, color: null, customName: null, collapsed: false, locked: false };
   }
   tree[tabId].parentId =
     typeof changeInfo.openerTabId === "number" ? changeInfo.openerTabId : null;
@@ -102,7 +104,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo) => {
 chrome.tabs.onAttached.addListener(async (tabId) => {
   const tree = await getTree();
   if (!tree[tabId]) {
-    tree[tabId] = { parentId: null, color: null, customName: null, collapsed: false };
+    tree[tabId] = { parentId: null, color: null, customName: null, collapsed: false, locked: false };
     await setTree(tree);
   }
 });

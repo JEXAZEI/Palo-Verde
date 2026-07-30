@@ -24,7 +24,13 @@ async function setTree(next) {
 
 function ensureEntry(tabId) {
   if (!tree[tabId]) {
-    tree[tabId] = { parentId: null, color: null, customName: null, collapsed: false };
+    tree[tabId] = {
+      parentId: null,
+      color: null,
+      customName: null,
+      collapsed: false,
+      locked: false,
+    };
   }
   return tree[tabId];
 }
@@ -49,6 +55,7 @@ async function loadAndRender() {
         color: null,
         customName: null,
         collapsed: false,
+        locked: false,
       };
       dirty = true;
     }
@@ -194,17 +201,31 @@ function buildNode(tabId, childMap) {
     await loadAndRender();
   });
 
+  const lockBtn = document.createElement("button");
+  lockBtn.className = "action-btn";
+  lockBtn.title = entry.locked ? "Unlock tab" : "Lock tab (protect from closing)";
+  lockBtn.textContent = entry.locked ? "🔒" : "🔓";
+  lockBtn.addEventListener("click", async (e) => {
+    e.stopPropagation();
+    entry.locked = !entry.locked;
+    await setTree(tree);
+    render();
+  });
+
   const closeBtn = document.createElement("button");
   closeBtn.className = "action-btn";
-  closeBtn.title = "Close tab";
+  closeBtn.title = entry.locked ? "Locked - unlock to close" : "Close tab";
   closeBtn.textContent = "✕";
+  closeBtn.disabled = !!entry.locked;
   closeBtn.addEventListener("click", (e) => {
     e.stopPropagation();
+    if (entry.locked) return;
     chrome.tabs.remove(tabId);
   });
 
-  actions.append(colorBtn, unloadBtn, closeBtn);
+  actions.append(colorBtn, lockBtn, unloadBtn, closeBtn);
   node.append(toggle, favicon, title, actions);
+  if (entry.locked) node.classList.add("locked");
 
   node.addEventListener("click", () => scheduleActivation(tabId));
   node.addEventListener("contextmenu", (e) => {
