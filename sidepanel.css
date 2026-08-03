@@ -5,17 +5,18 @@
 html, body {
   margin: 0;
   padding: 0;
-  width: 380px;
-  min-width: 320px;
-  max-width: 700px;
-  min-height: 200px;
-  max-height: 600px;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
-  resize: both;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
   font-size: 13px;
   color: #1f1f1f;
   background: #fafafa;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
 }
 
 .header {
@@ -25,8 +26,7 @@ html, body {
   padding: 8px 10px;
   background: #ffffff;
   border-bottom: 1px solid #e0e0e0;
-  position: sticky;
-  top: 0;
+  flex: 0 0 auto;
 }
 
 .header-title {
@@ -50,9 +50,9 @@ html, body {
 }
 
 .tree {
+  flex: 1 1 auto;
   overflow-y: auto;
   overflow-x: hidden;
-  max-height: 540px;
   padding: 4px 0;
 }
 

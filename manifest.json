@@ -3,12 +3,14 @@
   "name": "Leaf Tabs",
   "version": "1.0.0",
   "description": "A hierarchical tab tree manager: nest tabs by opener relationship, color-code, rename, and unload tabs to save memory.",
-  "permissions": ["tabs", "storage"],
+  "permissions": ["tabs", "storage", "sidePanel"],
   "background": {
     "service_worker": "background.js"
   },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
   "action": {
-    "default_popup": "popup.html",
     "default_title": "Leaf Tabs",
     "default_icon": {
       "16": "icons/icon16.png",

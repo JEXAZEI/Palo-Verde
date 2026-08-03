@@ -1,4 +1,4 @@
-// Leaf Tabs - popup script
+// Leaf Tabs - side panel script
 const STORE_KEY = "leafTree";
 
 const treeEl = document.getElementById("tree");
@@ -45,7 +45,7 @@ async function loadAndRender() {
   tabsById = new Map(tabs.map((t) => [t.id, t]));
 
   // Reconcile: make sure every open tab has an entry, and drop entries for
-  // tabs that no longer exist (covers tabs opened/closed while popup was shut).
+  // tabs that no longer exist (covers tabs opened/closed while the panel was closed).
   const openIds = new Set(tabsById.keys());
   let dirty = false;
   for (const tab of tabs) {
@@ -249,7 +249,7 @@ function buildNode(tabId, childMap) {
 }
 
 // A double-click on the title is preceded by two ordinary "click" events, so
-// a naive click handler would activate (and close) the popup before the
+// a naive click handler would activate the tab before the
 // dblclick ever fires. Delay activation briefly so a following dblclick can
 // cancel it in favor of renaming instead.
 const pendingActivations = new Map();
@@ -280,9 +280,7 @@ async function activateTab(tabId) {
   } catch (err) {
     // Tab may have vanished between render and click; refresh to recover.
     await loadAndRender();
-    return;
   }
-  window.close();
 }
 
 function startRename(titleEl, tabId) {
@@ -363,7 +361,7 @@ collapseAllBtn.addEventListener("click", async () => {
 
 refreshBtn.addEventListener("click", loadAndRender);
 
-// Keep the popup live while it's open, in case tabs change in the background.
+// Keep the panel live while it's open, in case tabs change in the background.
 chrome.tabs.onCreated.addListener(loadAndRender);
 chrome.tabs.onRemoved.addListener(loadAndRender);
 chrome.tabs.onUpdated.addListener((_tabId, changeInfo) => {

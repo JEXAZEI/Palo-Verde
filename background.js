@@ -7,6 +7,12 @@
 
 const STORE_KEY = "leafTree";
 
+// Make the toolbar icon open the side panel (instead of a popup) so the
+// tree stays docked and open across navigation, not closing on every click.
+chrome.sidePanel
+  .setPanelBehavior({ openPanelOnActionClick: true })
+  .catch((err) => console.error(err));
+
 async function getTree() {
   const data = await chrome.storage.local.get(STORE_KEY);
   return data[STORE_KEY] || {};
